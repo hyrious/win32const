@@ -71,13 +71,18 @@ def search k, from = nil
       end
     end
   else
-    puts "don't know #{k}, did you mean?"
-    (possibles = KEYS.grep Regexp.new k, 1).each_with_index do |k, i|
-      if i >= 20
-        puts "\t... #{possibles.size} possible results"
-        break
-      else
-        puts "\t#{k}"
+    possibles = KEYS.grep Regexp.new k, 1
+    if possibles.empty?
+      puts "don't know #{k}"
+    else
+      puts "don't know #{k}, did you mean?"
+      possibles.each_with_index do |k, i|
+        if i >= 20
+          puts "\t... #{possibles.size} possible results"
+          break
+        else
+          puts "\t#{k}"
+        end
       end
     end
   end
