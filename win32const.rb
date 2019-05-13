@@ -59,7 +59,7 @@ def search k, from = nil
       f = open FILES[i]
       (lineno - 1).times { f.gets }
       line =  f.gets
-      if line.lstrip.start_with? 'typedef'
+      if from and line.lstrip.start_with? 'typedef'
         puts "#{FILES[i]}:#{lineno}\n#{line}"
         puts line = f.gets until line == from
       else
@@ -67,6 +67,7 @@ def search k, from = nil
       end
       f.close
       if t.chomp == 't' and y and /typeref:struct:(?<ref>\w+)/ =~ y
+        puts "(recursively search #{ref})"
         search ref, line
       end
     end
