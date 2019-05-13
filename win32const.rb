@@ -52,13 +52,13 @@ end
 FILES, Cache = open CACHE, 'rb' do |f| Marshal.load f end
 KEYS = Cache.keys
 
-def search k, from = nil
+def search k, from = nil, file = nil
   if Cache.key? k
     Cache[k].each do |(i, lineno, t, y)|
       f = open File.join INCLUDE, FILES[i]
       (lineno - 1).times { f.gets }
-      line =  f.gets
-      if from and line.lstrip.start_with? 'typedef'
+      line = f.gets
+      if from and file == FILES[i] and line.lstrip.start_with? 'typedef'
         puts "#{FILES[i]}:#{lineno}\n#{line}"
         puts line = f.gets until line == from
       else
@@ -66,7 +66,7 @@ def search k, from = nil
       end
       f.close
       if t == 't' and y and /typeref:struct:(?<ref>\w+)/ =~ y
-        search ref, line
+        search ref, line, FILES[i]
       end
     end
   else
