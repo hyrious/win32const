@@ -58,9 +58,11 @@ def search k, from = nil, file = nil
       f = open File.join INCLUDE, FILES[i]
       (lineno - 1).times { f.gets }
       line = f.gets
-      if from and file == FILES[i] and line.lstrip.start_with? 'typedef'
-        puts "#{FILES[i]}:#{lineno}\n#{line}"
-        puts line = f.gets until line == from
+      if from
+        if file == FILES[i] and line.lstrip.start_with? 'typedef'
+          puts "#{FILES[i]}:#{lineno}\n#{line}"
+          puts line = f.gets until line == from
+        end
       else
         puts "#{FILES[i]}:#{lineno}\t#{line}"
       end

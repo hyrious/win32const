@@ -5,7 +5,7 @@ Dir.chdir __dir__
 begin
   require 'midori'
 rescue
-  puts "gem install midori"
+  puts "gem install midori.rb"
   exit 1
 end
 
@@ -36,8 +36,6 @@ class LruCache
 end
 
 Cache = LruCache.new 233
-require 'set'
-NotFound = Set.new
 
 class Win32ConstAPI < Midori::API
   get '/' do
