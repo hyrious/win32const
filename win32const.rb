@@ -37,7 +37,8 @@ unless File.exist? CACHE
     f.each_line do |l|
       next if l.start_with? '!'
       (x, file, lineno), (_, t, y), = (l.split ';"').map { |e| e.split(/\t/) }
-      (cache[x] ||= []) << [(files[file] ||= files.size), lineno.to_i, t, y]
+      i = files[(file.delete_prefix INCLUDE + '/')] ||= files.size
+      (cache[x] ||= []) << [i, lineno.to_i, t.chomp, y]
     end
   end
   open CACHE, 'wb' do |f|
@@ -56,7 +57,7 @@ KEYS = Cache.keys
 def search k, from = nil
   if Cache.key? k
     Cache[k].each do |(i, lineno, t, y)|
-      f = open FILES[i]
+      f = open File.join INCLUDE, FILES[i]
       (lineno - 1).times { f.gets }
       line =  f.gets
       if from and line.lstrip.start_with? 'typedef'
@@ -66,8 +67,7 @@ def search k, from = nil
         puts "#{FILES[i]}:#{lineno}\t#{line}"
       end
       f.close
-      if t.chomp == 't' and y and /typeref:struct:(?<ref>\w+)/ =~ y
-        puts "(recursively search #{ref})"
+      if t == 't' and y and /typeref:struct:(?<ref>\w+)/ =~ y
         search ref, line
       end
     end
