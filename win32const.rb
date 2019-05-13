@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-CACHE, TAGS, = (File.read '.gitignore').lines.map &:chomp
+Dir.chdir __dir__
 
-require 'fileutils'
-include FileUtils
-cd __dir__
+CACHE, TAGS, = (File.read '.gitignore').lines.map &:chomp
 
 PATHS = ENV['PATH'].split(';').map { |e| e.tr('\\', '/') }
 
