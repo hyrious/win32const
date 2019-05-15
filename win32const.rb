@@ -52,10 +52,13 @@ end
 FILES, Cache = open CACHE, 'rb' do |f| Marshal.load f end
 KEYS = Cache.keys
 
+SUBL = !!(ARGV.delete '--subl')
+
 def search k, from = nil, file = nil
   if Cache.key? k
     Cache[k].each do |(i, lineno, t, y)|
-      f = open File.join INCLUDE, FILES[i]
+      path = File.join INCLUDE, FILES[i]
+      f = open path
       (lineno - 1).times { f.gets }
       line = f.gets
       if from
@@ -67,6 +70,7 @@ def search k, from = nil, file = nil
         puts "#{FILES[i]}:#{lineno}\t#{line}"
       end
       f.close
+      system 'subl', '-a', "#{path}:#{lineno}" if SUBL
       if t == 't' and y and /typeref:struct:(?<ref>\w+)/ =~ y
         search ref, line, FILES[i]
       end
