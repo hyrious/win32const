@@ -53,6 +53,7 @@ FILES, Cache = open CACHE, 'rb' do |f| Marshal.load f end
 KEYS = Cache.keys
 
 SUBL = !!(ARGV.delete '--subl')
+M32 = !!(ARGV.delete '-m32')
 
 def search k, from = nil, file = nil
   if Cache.key? k
@@ -93,4 +94,44 @@ def search k, from = nil, file = nil
   end
 end
 
-ARGV.each { |k| search k }
+def utf8 str
+  str.encode("UTF-8", Encoding.default_external, replace: '?', invalid: :replace, undef: :replace, fallback: '?').chomp("\n")
+end
+
+require 'tempfile'
+def abi k
+  Tempfile.open(['a-', '.cpp']) do |f|
+    f.write <<~C
+      #define S(s) X(s)
+      #define X(s) #s
+      #include<windows.h>
+      #include<d3d11.h>
+      #include<bits/stdc++.h>
+      int main(){puts(("" S(#{k})));}
+    C
+    f.close
+    Tempfile.open(['a-', '.exe']) do |o|
+      o.close
+      raw = utf8 `2>&1 g++ -w -O -m32 #{f.path.inspect} -o #{o.path.inspect} && #{o.path.inspect}`
+      if raw == k
+        open(f,'w') { |g| g.write <<~C }
+          #include<windows.h>
+          #include<d3d11.h>
+          #include<cxxabi.h>
+          #include<bits/stdc++.h>
+          int main(){
+            int status;
+            char*name=abi::__cxa_demangle(typeid(#{k}).name(),0,0,&status);
+            puts(name);free(name);
+          }
+        C
+        puts utf8 `2>&1 g++ -w -O -m32 #{f.path.inspect} -o #{o.path.inspect} && #{o.path.inspect}`
+      else
+        puts raw
+      end
+    end
+  end
+end
+
+puts INCLUDE.tr('/', '\\')
+ARGV.each { |k| search k; abi k }
